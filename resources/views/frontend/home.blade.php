@@ -4,11 +4,9 @@
 {{ $homePageSettings->getTranslation('hero_title', app()->getLocale()) ?? __('Accueil') }} - {{ $siteSettingsGlobal->getTranslation('site_name', app()->getLocale()) ?? config('app.name', 'Nama') }}
 @endsection
 
-{{-- Supprimé le @push('styles_frontend') ici car nous allons tout mettre dans frontend.css --}}
-
 @section('content')
-<div class="container homepage-content"> {{-- Ajout d'une classe pour un ciblage CSS spécifique --}}
-    {{-- HERO SECTION (EXISTANT) --}}
+<div class="container homepage-content">
+    {{-- HERO SECTION --}}
     <div class="row mb-5">
         <div class="col-12 text-center hero-section animate__animated animate__fadeIn"
             style="{{ $homePageSettings->hero_background_image ? 'background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.75)), url(' . Storage::url($homePageSettings->hero_background_image) . ');' : '' }}">
@@ -19,21 +17,33 @@
                 {{ $homePageSettings->getTranslation('hero_subtitle', app()->getLocale()) ?? __('Agir ensemble pour un avenir meilleur.') }}
             </p>
             @php
-            $heroButtonLink = $homePageSettings->hero_button_link;
-            if ($heroButtonLink && !filter_var($heroButtonLink, FILTER_VALIDATE_URL) && Route::has($heroButtonLink)) {
-            try { $heroButtonLink = route($heroButtonLink, ['locale' => app()->getLocale()]); }
-            catch (\Exception $e) { $heroButtonLink = url($heroButtonLink); }
-            } elseif ($heroButtonLink) { $heroButtonLink = url($heroButtonLink); }
-            else { $heroButtonLink = route('frontend.projects.index', ['locale' => app()->getLocale()]); }
+            $heroButtonLinkValue = $homePageSettings->hero_button_link;
+            $finalHeroButtonLink = '#'; // Default fallback
+            if ($heroButtonLinkValue) {
+            if (!filter_var($heroButtonLinkValue, FILTER_VALIDATE_URL) && Route::has($heroButtonLinkValue)) {
+            try {
+            $finalHeroButtonLink = route($heroButtonLinkValue, ['locale' => app()->getLocale()]);
+            } catch (\Exception $e) {
+            // If route generation fails (e.g., missing parameters for the named route), fallback to URL
+            $finalHeroButtonLink = url($heroButtonLinkValue);
+            }
+            } else {
+            // If it's a full URL or not a valid route name, treat as direct URL
+            $finalHeroButtonLink = url($heroButtonLinkValue);
+            }
+            } else {
+            // Fallback if no button link is set in settings
+            $finalHeroButtonLink = route('frontend.projects.index', ['locale' => app()->getLocale()]);
+            }
             @endphp
-            <a href="{{ $heroButtonLink }}" class="btn btn-primary btn-lg hero-button"> {{-- Ajout btn-lg et classe --}}
+            <a href="{{ $finalHeroButtonLink }}" class="btn btn-primary btn-lg hero-button">
                 {{ $homePageSettings->getTranslation('hero_button_text', app()->getLocale()) ?? __('Découvrir nos Projets') }}
                 <i class="fas fa-arrow-right btn-icon-right"></i>
             </a>
         </div>
     </div>
 
-    {{-- LATEST PROJECTS (EXISTANT - PEUT ÊTRE STYLÉ DE FAÇON SIMILAIRE AUX ARTICLES/ÉVÉNEMENTS CI-DESSOUS) --}}
+    {{-- LATEST PROJECTS --}}
     @if(isset($latestProjects) && $latestProjects->isNotEmpty())
     <section class="home-section latest-projects-section mb-5 py-4" data-aos="fade-up">
         <div class="row">
@@ -94,8 +104,7 @@
     </section>
     @endif
 
-
-    {{-- LATEST POSTS (NOUVELLE PRÉSENTATION SUGGÉRÉE) --}}
+    {{-- LATEST POSTS --}}
     @if(isset($latestPosts) && $latestPosts->isNotEmpty())
     <section class="home-section latest-posts-section mb-5 py-4" data-aos="fade-up" data-aos-delay="100">
         <div class="row">
@@ -152,66 +161,7 @@
     </section>
     @endif
 
-    {{-- UPCOMING EVENTS (NOUVELLE PRÉSENTATION SUGGÉRÉE) --}}
-    @if(isset($upcomingEvents) && $upcomingEvents->isNotEmpty())
-    <section class="home-section upcoming-events-section mb-5 py-4" data-aos="fade-up" data-aos-delay="200">
-        <div class="row">
-            <div class="col-12 text-center mb-4">
-                <h2 class="section-title styled-title"><span>{{ $homePageSettings->getTranslation('upcoming_events_title', app()->getLocale()) ?? __('Événements à Venir') }}</span></h2>
-            </div>
-        </div>
-        <div class="row">
-            @foreach ($upcomingEvents as $event) 
-            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
-                <div class="card event-card h-100">
-                    {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                    <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="card-image-link">
-                        <div class="card-image-container">
-                            @if($event->image)
-                            <img src="{{ Storage::url($event->image) }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
-                            @else
-                            <img src="{{ asset('images/placeholder_event_card.jpg') }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
-                            @endif
-                            <div class="card-event-date-badge">
-                                <span class="day">{{ $event->start_datetime->format('d') }}</span>
-                                <span class="month">{{ $event->start_datetime->translatedFormat('M') }}</span>
-                                <span class="year">{{ $event->start_datetime->format('Y') }}</span>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">
-                            {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                            <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}">
-                                {{ Str::limit($event->getTranslation('title', app()->getLocale()), 55) }}
-                            </a>
-                        </h5>
-                        <p class="card-details text-muted small mb-2">
-                            <i class="fas fa-clock me-1"></i> {{ $event->start_datetime->translatedFormat('H:i') }}
-                            @if($event->getTranslation('location_text', app()->getLocale()))
-                            <br><i class="fas fa-map-marker-alt me-1 mt-1"></i> {{ Str::limit($event->getTranslation('location_text', app()->getLocale()), 30) }}
-                            @endif
-                        </p>
-                        <p class="card-excerpt flex-grow-1">{{ Str::limit(strip_tags($event->getTranslation('description', app()->getLocale())), 100) }}</p>
-                        {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                        <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="btn btn-outline-info mt-auto align-self-start">
-                            {{ __('Voir les détails') }} <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        <div class="row mt-4">
-            <div class="col-12 text-center">
-                <a href="{{ route('frontend.events.index', ['locale' => app()->getLocale()]) }}" class="btn btn-info text-white btn-lg">
-                    {{ __('Tous nos événements') }} <i class="fas fa-arrow-right btn-icon-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-    @endif
-    {{-- UPCOMING EVENTS (NOUVELLE PRÉSENTATION SUGGÉRÉE) --}}
+    {{-- UPCOMING EVENTS --}}
     @if(isset($upcomingEvents) && $upcomingEvents->isNotEmpty())
     <section class="home-section upcoming-events-section mb-5 py-4" data-aos="fade-up" data-aos-delay="200">
         <div class="row">
@@ -223,10 +173,12 @@
             @foreach ($upcomingEvents as $event)
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
                 <div class="card event-card h-100">
-                    {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                    <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="card-image-link">
+                    {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
+                    <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="card-image-link">
                         <div class="card-image-container">
-                            @if($event->featured_image_url)
+                            @if($event->image)
+                            <img src="{{ Storage::url($event->image) }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
+                            @elseif($event->image_url) {{-- Si vous avez un accesseur image_url sur votre modèle Event --}}
                             <img src="{{ $event->image_url }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
                             @else
                             <img src="{{ asset('images/placeholder_event_card.jpg') }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
@@ -240,8 +192,8 @@
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">
-                            {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                            <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}">
+                            {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
+                            <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}">
                                 {{ Str::limit($event->getTranslation('title', app()->getLocale()), 55) }}
                             </a>
                         </h5>
@@ -252,8 +204,8 @@
                             @endif
                         </p>
                         <p class="card-excerpt flex-grow-1">{{ Str::limit(strip_tags($event->getTranslation('description', app()->getLocale())), 100) }}</p>
-                        {{-- LIGNE CORRIGÉE CI-DESSOUS --}}
-                        <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event_slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="btn btn-outline-info mt-auto align-self-start">
+                        {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
+                        <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="btn btn-outline-info mt-auto align-self-start">
                             {{ __('Voir les détails') }} <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -270,18 +222,20 @@
         </div>
     </section>
     @endif
+
 </div> {{-- Fin du container homepage-content --}}
 
-{{-- NEWSLETTER SECTION (EXISTANT - PEUT ÊTRE STYLÉ PLUS EN PROFONDEUR) --}}
-<section class="newsletter-section mt-5 py-5" data-aos="fade-up"> {{-- Ajout de py-5 --}}
+{{-- NEWSLETTER SECTION --}}
+<section class="newsletter-section mt-5 py-5" data-aos="fade-up">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8 text-center">
                 <div class="newsletter-icon">
-                    <i class="fas fa-envelope-open-text"></i> {{-- Icône changée --}}
+                    <i class="fas fa-envelope-open-text"></i>
                 </div>
                 <h2 class="newsletter-title">{{ $homePageSettings->getTranslation('newsletter_title', app()->getLocale()) ?? __('Restez informé de nos activités') }}</h2>
                 <p class="newsletter-text mb-4">{{ $homePageSettings->getTranslation('newsletter_text', app()->getLocale()) ?? __('Inscrivez-vous à notre newsletter pour recevoir les dernières nouvelles et mises à jour.') }}</p>
+                {{-- Note: L'action du formulaire est "#". Vous devrez implémenter une route et un contrôleur pour la soumission de la newsletter. --}}
                 <form class="row g-2 justify-content-center newsletter-form-inline" action="#" method="POST">
                     @csrf
                     <div class="col-sm-8 col-md-7 col-lg-6">
@@ -289,7 +243,7 @@
                         <input type="email" name="email" class="form-control form-control-lg" id="newsletter_email" placeholder="{{ __('Votre adresse email') }}" required>
                     </div>
                     <div class="col-sm-4 col-md-auto">
-                        <button class="btn btn-primary btn-lg w-100" type="submit"> {{-- w-100 pour mobile --}}
+                        <button class="btn btn-primary btn-lg w-100" type="submit">
                             {{ __('S\'inscrire') }} <i class="fas fa-paper-plane ms-1"></i>
                         </button>
                     </div>
@@ -301,22 +255,14 @@
 @endsection
 
 @push('scripts_frontend')
-{{-- Le script pour les logos des partenaires est déjà là, nous pourrions l'améliorer ou le généraliser pour d'autres effets si besoin --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Effet de survol pour les logos des partenaires (le CSS le gère mieux maintenant)
+        // Le script pour les logos des partenaires est commenté,
+        // en supposant que le CSS gère mieux les effets de survol.
         // const partnerLogos = document.querySelectorAll('.partner-logo-item img');
         // partnerLogos.forEach(logo => {
-        //     logo.addEventListener('mouseover', () => {
-        //         logo.style.filter = 'grayscale(0%)';
-        //         logo.style.opacity = '1';
-        //         logo.style.transform = 'scale(1.05)';
-        //     });
-        //     logo.addEventListener('mouseout', () => {
-        //         logo.style.filter = 'grayscale(80%)'; /* Un peu moins gris par défaut */
-        //         logo.style.opacity = '0.8';
-        //         logo.style.transform = 'scale(1)';
-        //     });
+        //     logo.addEventListener('mouseover', () => { /* ... */ });
+        //     logo.addEventListener('mouseout', () => { /* ... */ });
         // });
     });
 </script>

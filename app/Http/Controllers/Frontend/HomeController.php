@@ -11,7 +11,7 @@ use App\Models\HomePageSetting; // <-- Ajouté
 
 // SiteSetting sera injecté par ViewComposer, donc pas besoin ici si ViewComposer est utilisé.
 // use App\Models\SiteSetting; 
-
+ 
 class HomeController extends Controller
 {
     /**

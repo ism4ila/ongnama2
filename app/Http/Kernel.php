@@ -76,6 +76,7 @@ class Kernel extends HttpKernel
 
         // Vous pourriez avoir d'autres middlewares personnalisés ici, par exemple:
         // 'isAdmin' => \App\Http\Middleware\IsAdmin::class, // Pour protéger les routes admin
+        'auth.admin' => \App\Http\Middleware\IsAdmin::class,
     ];
 
     /**
@@ -92,5 +93,6 @@ class Kernel extends HttpKernel
         \Illuminate\Session\Middleware\AuthenticateSession::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
+        'auth.admin' => \App\Http\Middleware\IsAdmin::class,
     ];
 }

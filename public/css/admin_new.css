@@ -1,31 +1,191 @@
-body {
-    font-family: 'Nunito', sans-serif; /* Ou une autre police de votre choix */
-}
+/* Styles généraux */
+ body {
+     font-family: Arial, sans-serif;
+     margin: 0;
+     padding: 0;
+     background-color: #f4f6f9;
+     color: #333;
+ }
+ 
 
-#sidebar {
-    width: 280px;
-    min-height: 100vh; /* Assure que la sidebar prend toute la hauteur */
-    transition: all 0.3s;
-}
+ .container {
+     display: flex;
+     height: 100vh;
+ }
+ 
 
-#sidebar .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.1);
-}
+ /* Sidebar */
+ .sidebar {
+     width: 250px;
+     background-color: #343a40;
+     color: white;
+     padding-top: 20px;
+     height: 100%;
+     position: fixed;
+     overflow-y: auto;
+ }
+ 
 
-#sidebar .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
+ .sidebar .logo {
+     text-align: center;
+     margin-bottom: 30px;
+     font-size: 1.5em;
+     font-weight: bold;
+     display: block;
+     padding: 10px 0;
+     color: white;
+     text-decoration: none;
+ }
+ 
 
-/* Pour cacher la sidebar sur les petits écrans initialement si vous voulez un bouton toggle */
-@media (max-width: 768px) {
-  #sidebar {
-    margin-left: -280px; /* Cachée par défaut */
-  }
-  #sidebar.active {
-    margin-left: 0; /* Visible quand active */
-  }
-}
+ .sidebar a {
+     padding: 15px 20px;
+     display: block;
+     color: white;
+     text-decoration: none;
+     border-left: 3px solid transparent;
+     transition: 0.3s;
+ }
+ 
 
-.content {
-    width: 100%;
-}
+ .sidebar a:hover,
+ .sidebar a.active {
+     background-color: #495057;
+     border-left-color: #007bff;
+ }
+ 
+
+ .sidebar i {
+     margin-right: 10px;
+     width: 20px;
+     text-align: center;
+ }
+ 
+
+ /* Contenu principal */
+ .content {
+     margin-left: 250px;
+     width: calc(100% - 250px);
+     transition: 0.3s;
+ }
+ 
+
+ header {
+     background-color: white;
+     padding: 20px;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+ }
+ 
+
+ header h2 {
+     margin: 0;
+     color: #555;
+ }
+ 
+
+ .user-info {
+     display: flex;
+     align-items: center;
+ }
+ 
+
+ .user-info i {
+     margin-right: 10px;
+     font-size: 1.2em;
+     color: #777;
+ }
+ 
+
+ main {
+     padding: 20px;
+ }
+ 
+
+ /* Dashboard Content */
+ .dashboard-content {
+     background-color: white;
+     padding: 20px;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     border-radius: 5px;
+ }
+ 
+
+ /* Tableau */
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     margin-top: 20px;
+ }
+ 
+
+ table, th, td {
+     border: 1px solid #dee2e6;
+ }
+ 
+
+ th, td {
+     padding: 12px 15px;
+     text-align: left;
+ }
+ 
+
+ thead {
+     background-color: #f8f9fa;
+ }
+ 
+
+ th {
+     font-weight: bold;
+ }
+ 
+
+ /* Formulaire */
+ #category-form {
+     margin-top: 20px;
+     padding: 15px;
+     background-color: #f8f9fa;
+     border-radius: 5px;
+ }
+ 
+
+ #category-form input {
+     width: 60%;
+     padding: 10px;
+     margin-right: 10px;
+     border: 1px solid #ced4da;
+     border-radius: 4px;
+ }
+ 
+
+ #category-form button {
+     padding: 10px 15px;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+ }
+ 
+
+ #save-category {
+     background-color: #28a745;
+     color: white;
+ }
+ 
+
+ #cancel-category {
+     background-color: #dc3545;
+     color: white;
+ }
+ 
+
+ #create-category {
+     background-color: #007bff;
+     color: white;
+     padding: 10px 15px;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     margin-bottom: 20px;
+ }

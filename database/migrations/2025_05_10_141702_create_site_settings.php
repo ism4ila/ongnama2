@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('accent_color')->nullable()->default('#80CBC4');
             // -----------------------------------------
 
+            $table->string('default_direction')->nullable()->default('ltr'); // 'ltr' ou 'rtl'
             $table->timestamps();
         });
     }

@@ -22,12 +22,9 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class,
             PartnerSeeder::class,
             TeamMemberSeeder::class,
-            // CommentSeeder::class,
-
-            // Nouveaux Seeders
             HomePageSettingSeeder::class,
             SiteSettingSeeder::class,
-            PageSeeder::class, // Mettez à jour ou ajoutez PageSeeder
+            PageSeeder::class,
         ]);
     }
 }

@@ -20,9 +20,22 @@ class UserSeeder extends Seeder
             'name' => 'ISMAILA', // Prénom uniquement
             'last_name' => 'HAMADOU', // Ajout du nom de famille
             'email' => 'ismailahamadou5@gmail.com',
+            'is_admin' => true,
             'password' => '12345678',
             'email_verified_at' => now(),
         ]);
+
+        User::create([
+            'name' => 'Soumayya', // Prénom uniquement
+            'last_name' => 'LAtifa', // Ajout du nom de famille
+            'email' => 'soumy@choco.com',
+            'is_admin' => false,
+            'password' => '12345678',
+            'email_verified_at' => now(),
+        ]);
+
+        // Créer quelques utilisateurs normaux
+
 
        
     }
