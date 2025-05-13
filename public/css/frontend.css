@@ -1,0 +1,591 @@
+/* Styles existants dans frontend.css ... */
+
+/* NOUVEAUX STYLES DÉPLACÉS DE home.blade.php */
+/* Assurez-vous que les variables CSS (--primary-color, etc.) sont définies globalement, 
+   par exemple dans :root {} au début de ce fichier ou dans le layout.
+   Si elles étaient définies dans le <style> de home.blade.php, déplacez cette définition ici. */
+
+/* Exemple de variables (à adapter/vérifier avec votre setup existant) */
+:root {
+    --primary-color: #26A69A; /* Vert turquoise - Exemple, adaptez ! */
+    --secondary-color: #00796B; /* Vert plus foncé */
+    --accent-color: #80CBC4; /* Vert clair accent */
+    --text-color: #263238; /* Bleu-gris foncé pour texte */
+    --light-gray: #F5F7F8; /* Gris très clair pour fonds */
+    --dark-gray: #546E7A; /* Gris moyen pour texte secondaire */
+    --transition-speed: 0.3s;
+}
+
+/* Styles spécifiques à la page d'accueil (anciennement inline) */
+.hero-section {
+    padding: 4rem 1rem; /* Ajusté pour être dans un container */
+    /* L'image de fond est maintenant gérée inline via la variable $homePageSettings->hero_background_image */
+    /* background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8)),
+    url('../images/hero-bg.jpg'); Assurez-vous que ce chemin est correct si vous gardez un fallback CSS */
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    /* margin-bottom: 4rem; Déjà géré par la structure de la grille Bootstrap mb-5 */
+}
+
+.hero-title {
+    font-weight: 700;
+    font-size: 2.8rem;
+    margin-bottom: 1.5rem;
+    color: var(--secondary-color);
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    color: var(--dark-gray);
+}
+
+/* Section headers */
+.section-title {
+    position: relative;
+    display: inline-block;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 2.5rem; /* Remplacé par Bootstrap mb-4 sur le col-12 */
+    padding-bottom: 0.8rem;
+    font-size: 2rem; /* Ajout d'une taille par défaut */
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color);
+    bottom: 0;
+    left: 0;
+}
+
+[dir="rtl"] .section-title:after {
+    right: 0;
+    left: auto;
+}
+
+/* Cards (styles généraux pour les cartes utilisées sur la page d'accueil) */
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card .card-img-top { /* Style plus spécifique pour éviter les conflits */
+    /* height: 220px; Géré inline pour plus de flexibilité par section */
+    object-fit: cover;
+    transition: transform 0.8s ease; /* Changé 'all' en 'transform' */
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.card-body { /* Styles généraux, peuvent être affinés si besoin */
+    padding: 1.5rem;
+}
+
+.card-title { /* Styles généraux pour les titres de cartes */
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--secondary-color); /* Couleur par défaut pour les titres de cartes */
+}
+.card-title a:hover {
+    color: var(--primary-color) !important; /* Pour les titres cliquables */
+}
+
+
+.card-text {
+    color: var(--dark-gray);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    font-size: 0.9rem; /* légèrement plus petit */
+}
+
+/* Status badges */
+.status-badge {
+    background-color: var(--accent-color);
+    color: var(--secondary-color); /* Assurez un bon contraste */
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.date-badge {
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+}
+
+/* Buttons (styles globaux pour les boutons, peuvent déjà exister dans votre frontend.css) */
+.btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff; /* Assurez-vous que le texte est lisible */
+    box-shadow: 0 4px 10px rgba(var(--primary-color-rgb, 38, 166, 154), 0.3); /* Utilisez des vars RGB pour l'ombre */
+}
+:root { --primary-color-rgb: 38, 166, 154; } /* Exemple, à définir avec vos couleurs */
+
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    box-shadow: 0 6px 15px rgba(var(--primary-color-rgb, 38, 166, 154), 0.4);
+    transform: translateY(-2px);
+}
+/* ... autres styles de boutons (.btn-outline-primary, .btn-secondary etc.) ... */
+
+.btn-icon-right i {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+.btn:hover .btn-icon-right i {
+    transform: translateX(4px);
+}
+[dir="rtl"] .btn-icon-right i {
+    margin-right: 8px;
+    margin-left: 0;
+    /* transform: scaleX(-1); Pas toujours nécessaire avec FA5+ et la gestion RTL */
+}
+[dir="rtl"] .btn:hover .btn-icon-right i {
+    /* transform: scaleX(-1) translateX(-4px); */
+     transform: translateX(-4px);
+}
+
+
+/* Event date box */
+.event-date-box {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    padding: 10px; /* Un peu réduit */
+    min-width: 70px; /* Un peu réduit */
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 38, 166, 154), 0.3);
+    transition: all 0.3s ease;
+}
+
+.card:hover .event-date-box { /* S'assurer que cela s'applique correctement */
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(var(--primary-color-rgb, 38, 166, 154), 0.4);
+}
+
+.event-date-box .day {
+    font-size: 1.6rem; /* Un peu réduit */
+    font-weight: 700;
+    line-height: 1;
+    display: block;
+}
+
+.event-date-box .month {
+    font-size: 0.8rem; /* Un peu réduit */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    display: block;
+}
+
+/* Partners section */
+.partner-logo-container:hover .partner-logo { /* Cible l'image via le conteneur au survol */
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* Newsletter section */
+.newsletter-section {
+    background-color: #E0F2F1; /* Ou var(--light-gray) si plus cohérent */
+    border-radius: 20px;
+    padding: 3rem 1rem; /* container gère le padding latéral */
+    position: relative;
+    overflow: hidden; /* Pour le pseudo-élément de motif */
+    box-shadow: inset 0 0 60px rgba(var(--accent-color-rgb, 128, 203, 196), 0.2);
+    /* margin-top: 4rem; */ /* Géré par Bootstrap mb-5 sur les sections précédentes */
+    /* margin-bottom: 4rem; */
+}
+:root { --accent-color-rgb: 128, 203, 196; } /* Exemple, à définir */
+
+
+.newsletter-section:before { /* Motif de fond subtil */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSIjMjZhNjlhIiBmaWxsLW9wYWNpdHk9IjAuMDUiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiLz48cGF0aCBkPSJNMCAwaDIwdjIwSDB6TTIwIDIwaDIwdjIwSDIweiIvPjwvZz48L3N2Zz4='); /* Exemple de motif SVG */
+    opacity: 0.8; /* Ajustez selon le motif */
+    z-index: 0;
+}
+
+.newsletter-section .container > .row { /* Pour que le contenu soit au-dessus du pseudo-élément */
+    position: relative;
+    z-index: 1;
+}
+
+.newsletter-icon {
+    display: inline-block;
+    background-color: white;
+    padding: 20px;
+    border-radius: 50%;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 20px rgba(var(--primary-color-rgb, 38, 166, 154), 0.2);
+}
+
+.newsletter-section h2 {
+    color: var(--secondary-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.newsletter-section p {
+    color: var(--dark-gray);
+    margin-bottom: 2rem;
+    max-width: 700px; /* Limite la largeur du texte */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newsletter-form .form-control { /* Ajustement du style du formulaire */
+    border-radius: 50px !important; /* Forcer le radius si Bootstrap interfère */
+    padding: 0.75rem 1.5rem; /* Ajuster le padding */
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem; /* Espace sur mobile */
+}
+@media (min-width: 768px) { /* Sur md et plus, le bouton est à côté */
+    .newsletter-form .form-control {
+        border-radius: 50px 0 0 50px !important;
+        margin-bottom: 0;
+    }
+     .newsletter-form .btn {
+        border-radius: 0 50px 50px 0 !important;
+    }
+}
+
+
+.newsletter-form .btn {
+    padding: 0.75rem 2rem; /* Ajuster le padding */
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 38, 166, 154), 0.2);
+}
+
+/* Animations (déjà dans frontend.blade.php, mais vérifiez si des ajustements sont nécessaires) */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out; /* ease-out pour un effet plus doux */
+}
+
+.fade-in.active { /* 'active' est ajouté par JS au scroll */
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive (déjà dans frontend.blade.php, mais vérifiez si des ajustements sont nécessaires) */
+@media (max-width: 767.98px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    .section-title {
+        font-size: 1.5rem;
+    }
+}
+/* FIN DES NOUVEAUX STYLES DÉPLACÉS */
+
+/* Styles pour la page d'accueil - Sections dynamiques */
+
+.homepage-content .home-section {
+    background-color: #fff; /* Fond blanc pour les sections sur le fond gris du body */
+    padding: 2.5rem 1.5rem; /* Espace intérieur pour les sections */
+    border-radius: 12px; /* Coins arrondis pour les sections */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07); /* Ombre douce pour les sections */
+}
+.homepage-content .home-section:nth-child(odd) { /* Alternance de fond si souhaité */
+    /* background-color: var(--light-gray); */ /* Exemple */
+}
+
+
+/* Styles pour les titres de section */
+.styled-title {
+    display: inline-block;
+    position: relative;
+    color: var(--secondary-color, #00796B); /* Couleur du titre */
+    font-weight: 700; /* Police plus grasse */
+    margin-bottom: 2rem !important; /* Espace en dessous */
+    padding-bottom: 0.75rem;
+    font-size: 2.2rem; /* Taille de police augmentée */
+}
+.styled-title span {
+    position: relative;
+    z-index: 1;
+}
+.styled-title::before { /* Ligne décorative principale */
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 100px; /* Largeur de la ligne */
+    height: 4px; /* Épaisseur de la ligne */
+    background-color: var(--primary-color, #26A69A); /* Couleur de la ligne */
+    border-radius: 2px;
+}
+.styled-title::after { /* Ligne décorative secondaire plus courte */
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -8px; /* Positionnée sous la première ligne */
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent-color, #80CBC4);
+    border-radius: 2px;
+    opacity: 0.7;
+}
+[dir="rtl"] .styled-title::before,
+[dir="rtl"] .styled-title::after {
+    left: auto;
+    right: 50%;
+    transform: translateX(50%);
+}
+
+
+/* Styles pour les cartes (général, puis spécifique par type) */
+.card { /* Styles de base déjà présents, on affine */
+    border: none;
+    border-radius: 10px; /* Coins légèrement moins arrondis que la section */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    overflow: hidden; /* Important pour les images et badges */
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(var(--secondary-color-rgb, 0, 121, 107), 0.15);
+}
+
+.card-image-link {
+    display: block;
+    text-decoration: none;
+}
+.card-image-container {
+    position: relative;
+    height: 220px; /* Hauteur fixe pour toutes les images de carte */
+    background-color: #f0f0f0; /* Couleur de fond si l'image est manquante */
+    overflow: hidden;
+}
+.card-image-container .card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Assure que l'image couvre bien, peut couper des parties */
+    transition: transform 0.4s ease;
+}
+.card:hover .card-image-container .card-img-top {
+    transform: scale(1.08); /* Effet de zoom subtil au survol */
+}
+
+.card-body {
+    padding: 1.25rem; /* Padding standard pour le corps de la carte */
+}
+.card-title { /* Styles généraux pour les titres de cartes */
+    font-weight: 600;
+    font-size: 1.15rem; /* Légèrement réduit pour plus d'élégance */
+    margin-bottom: 0.5rem;
+}
+.card-title a {
+    text-decoration: none;
+    color: var(--secondary-color, #00796B);
+    transition: color 0.3s ease;
+}
+.card-title a:hover {
+    color: var(--primary-color, #26A69A);
+}
+.card-date, .card-details {
+    font-size: 0.8rem;
+    color: #777;
+}
+.card-excerpt {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--dark-gray, #546E7A);
+    margin-bottom: 1rem; /* Espace avant le bouton */
+}
+
+/* Badges sur les images */
+.card-status-badge, .card-category-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    color: #fff;
+    z-index: 2;
+}
+.card-status-badge { /* Pour les projets */
+    background-color: rgba(var(--primary-color-rgb, 38, 166, 154), 0.9);
+}
+.card-category-badge { /* Pour les articles */
+    background-color: rgba(var(--secondary-color-rgb, 0, 121, 107), 0.85);
+    left: auto; /* Le positionner à droite pour varier */
+    right: 10px;
+}
+[dir="rtl"] .card-status-badge { left: auto; right: 10px; }
+[dir="rtl"] .card-category-badge { right: auto; left: 10px; }
+
+
+/* Spécifique pour les cartes d'événements */
+.event-card .card-image-container {
+    display: flex; /* Pour centrer l'icône placeholder */
+    align-items: center;
+    justify-content: center;
+}
+.card-event-date-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color, #26A69A);
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    line-height: 1.1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    z-index: 2;
+}
+.card-event-date-badge .day {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.card-event-date-badge .month {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.card-event-date-badge .year {
+    display: block;
+    font-size: 0.7rem;
+    color: #777;
+}
+[dir="rtl"] .card-event-date-badge { right: auto; left: 10px; }
+
+/* Section Partenaires */
+.partners-section {
+    background-color: var(--light-gray, #F5F7F8); /* Fond légèrement différent pour cette section */
+}
+.partner-logo-item {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.partner-logo-item img {
+    max-height: 70px; /* Hauteur max pour les logos */
+    width: auto; /* Garder les proportions */
+    filter: grayscale(80%); /* Moins gris par défaut */
+    opacity: 0.8;
+    margin: 0 auto; /* Centrer l'image si la colonne est plus large */
+    transition: all 0.3s ease;
+}
+.partner-logo-item:hover img {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Section Newsletter (amélioration des styles existants si besoin) */
+
+.newsletter-icon i {
+    font-size: 2.5rem !important; /* S'assurer que la taille est correcte */
+    color: var(--primary-color, #26A69A) !important;
+}
+.newsletter-title {
+    font-weight: 600;
+    color: var(--secondary-color, #00796B);
+    margin-bottom: 0.75rem; /* Un peu moins d'espace */
+}
+.newsletter-text {
+    font-size: 1rem;
+    color: var(--dark-gray, #546E7A);
+}
+.newsletter-form-inline .form-control-lg {
+    padding: 0.75rem 1.25rem; /* Ajuster le padding pour btn-lg */
+}
+.newsletter-form-inline .btn-lg {
+    padding: 0.75rem 1.5rem; /* Cohérence du padding */
+}
+
+
+/* Styles pour le Hero Section (affinage) */
+.hero-section {
+    padding: 5rem 1rem; /* Plus de padding vertical */
+    /* background-image géré dynamiquement */
+    background-size: cover;
+    background-position: center center; /* Mieux centrer */
+    border-radius: 15px; /* Cohérence avec les sections */
+    /* box-shadow: 0 10px 30px rgba(0,0,0,0.05); Déjà présent */
+}
+.hero-title {
+    font-size: clamp(2rem, 5vw, 3.2rem); /* Taille de police responsive */
+    color: var(--secondary-color, #00796B);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+.hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.4rem); /* Taille de police responsive */
+    color: var(--dark-gray, #546E7A);
+    margin-bottom: 2.5rem;
+}
+.hero-button.btn-lg { /* Style spécifique pour le bouton du hero */
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb, 38,166,154), 0.35);
+}
+.hero-button.btn-lg:hover {
+    box-shadow: 0 8px 20px rgba(var(--primary-color-rgb, 38,166,154), 0.45);
+    transform: translateY(-3px);
+}
+
+/* Utilitaires (si non déjà présents) */
+.text-decoration-none { text-decoration: none !important; }
+.align-self-start { align-self: flex-start !important; }
+
+/* Responsive pour les cartes dans les sections */
+@media (max-width: 767.98px) {
+    .home-section .card {
+        margin-bottom: 1.5rem; /* Espace entre les cartes sur mobile */
+    }
+    .styled-title {
+        font-size: 1.8rem; /* Titres de section plus petits sur mobile */
+    }
+     .newsletter-form-inline .btn-lg {
+        margin-top: 0.5rem; /* Espace pour le bouton sous l'input sur mobile */
+    }
+}

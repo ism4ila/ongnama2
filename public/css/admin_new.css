@@ -1,0 +1,31 @@
+body {
+    font-family: 'Nunito', sans-serif; /* Ou une autre police de votre choix */
+}
+
+#sidebar {
+    width: 280px;
+    min-height: 100vh; /* Assure que la sidebar prend toute la hauteur */
+    transition: all 0.3s;
+}
+
+#sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Pour cacher la sidebar sur les petits écrans initialement si vous voulez un bouton toggle */
+@media (max-width: 768px) {
+  #sidebar {
+    margin-left: -280px; /* Cachée par défaut */
+  }
+  #sidebar.active {
+    margin-left: 0; /* Visible quand active */
+  }
+}
+
+.content {
+    width: 100%;
+}
