@@ -11,22 +11,26 @@ use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Frontend\AboutPageController as FrontendAboutPageController;
 use App\Http\Controllers\Frontend\ProjectController as FrontendProjectController;
-use App\Http\Controllers\Frontend\PostController as FrontendPostController; // Pour les "Actualités" / "News"
+use App\Http\Controllers\Frontend\PostController as FrontendPostController;
 use App\Http\Controllers\Frontend\EventController as FrontendEventController;
-// use App\Http\Controllers\Frontend\PartnerController as FrontendPartnerController; // Décommentez si vous avez une page dédiée
-use App\Http\Controllers\Frontend\PageController as FrontendPageController; // Pour les pages dynamiques
+use App\Http\Controllers\Frontend\PageController as FrontendPageController;
 use App\Http\Controllers\Frontend\ContactController as FrontendContactController;
 
 // --- Contrôleurs Admin ---
-use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController; // Pour la connexion admin
+use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-// Décommentez et ajoutez les use statements pour d'autres contrôleurs Admin au fur et à mesure
-// use App\Http\Controllers\Admin\PostController as AdminPostController;
-// use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
-// use App\Http\Controllers\Admin\EventController as AdminEventController;
-// use App\Http\Controllers\Admin\PageController as AdminPageController;
-// use App\Http\Controllers\Admin\SettingController as AdminSettingController; // Pour SiteSettings, HomePageSettings etc.
+use App\Http\Controllers\Admin\PostController as AdminPostController; // Déjà présent, bien
+use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\TeamMemberController as AdminTeamMemberController;
+use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+// use App\Http\Controllers\Admin\MediaItemController as AdminMediaItemController; // Si vous l'implémentez
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +39,6 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 */
 
 // --- ROUTE POUR LE CHANGEMENT DE LANGUE ---
-// Doit être accessible sans le middleware SetLocale pour pouvoir changer la langue
 Route::get('language/{locale}', function ($locale) {
     $supportedLocales = Config::get('app.available_locales', ['en', 'fr', 'ar']);
     if (in_array($locale, $supportedLocales)) {
@@ -47,56 +50,25 @@ Route::get('language/{locale}', function ($locale) {
 
 
 // --- ROUTES PUBLIQUES (FRONTEND) ---
-// Toutes ces routes bénéficient du middleware 'set_locale' (via le groupe 'web' dans Kernel.php)
-// et du groupe 'web' (session, cookies, etc.).
 Route::group(['middleware' => ['web', 'set_locale']], function () {
-
     Route::get('/', [FrontendHomeController::class, 'index'])->name('frontend.home');
-
-    // "À Propos" - Peut être gérée par PageController si 'about' est un slug dans la table Pages
-    // Ou gardez un contrôleur dédié si la logique est complexe :
     Route::get('/about', [FrontendAboutPageController::class, 'index'])->name('frontend.about');
-
-    // Actualités (Posts) - Votre fichier actuel utilise /news, mais vos vues utilisent frontend.posts.*
-    // J'utilise /blog pour la cohérence avec les noms de route frontend.posts.*. Adaptez si /news est préféré.
     Route::get('/blog', [FrontendPostController::class, 'index'])->name('frontend.posts.index');
     Route::get('/blog/{post:slug}', [FrontendPostController::class, 'show'])->name('frontend.posts.show');
-    // Route pour les commentaires (si implémentée)
-    // Route::post('/blog/{post}/comments', [FrontendPostController::class, 'storeComment'])->name('frontend.posts.comments.store');
-
-
-    // Projets
+    // Route::post('/blog/{post}/comments', [FrontendPostController::class, 'storeComment'])->name('frontend.posts.comments.store'); // Assurez-vous que cette méthode existe dans FrontendPostController
     Route::get('/projects', [FrontendProjectController::class, 'index'])->name('frontend.projects.index');
-    Route::get('/projects/{project:slug}', [FrontendProjectController::class, 'show'])->name('frontend.projects.show');
-
-    // Événements
+    Route::get('/projects/{project:slug}', [FrontendProjectController::class, 'show'])->name('frontend.projects.show'); // Assurez-vous que le modèle Project a un champ slug traduisible et est géré
     Route::get('/events', [FrontendEventController::class, 'index'])->name('frontend.events.index');
-    // Correction: s'assurer que le paramètre est {event:slug} pour le route model binding
-    Route::get('/events/{event:slug}', [FrontendEventController::class, 'show'])->name('frontend.events.show');
-
-    // Partenaires (si une page dédiée existe)
-    // Route::get('/partners', [FrontendPartnerController::class, 'index'])->name('frontend.partners.index');
-
-    // Contact
+    Route::get('/events/{event:slug}', [FrontendEventController::class, 'show'])->name('frontend.events.show'); // Idem pour Event et slug
     Route::get('/contact', [FrontendContactController::class, 'index'])->name('frontend.contact.index');
     Route::post('/contact', [FrontendContactController::class, 'store'])->name('frontend.contact.store');
 
+    Auth::routes(['verify' => true, 'register' => true]); // Ou false pour register si non désiré publiquement
 
-    // --- ROUTES D'AUTHENTIFICATION STANDARD LARAVEL (Pour utilisateurs frontend, si nécessaire) ---
-    // Mettez 'register' => false si vous ne voulez pas de page d'inscription publique
-    Auth::routes(['verify' => true, 'register' => true]);
+    // Route /home par défaut de Laravel
+    // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home'); // Assurez-vous que ce contrôleur existe ou commentez/modifiez
 
-    // Route /home par défaut de Laravel (si Auth::routes() est utilisé)
-    // Assurez-vous qu'un App\Http\Controllers\HomeController existe ou changez cette route.
-    // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-
-    // --- ROUTE POUR LES PAGES DYNAMIQUES (IMPORTANT: À LA FIN DES ROUTES FRONTEND) ---
-    // Elle essaiera de trouver une page correspondant au slug.
-    // Le {page:slug} utilise le route model binding sur le champ 'slug' du modèle Page.
-    Route::get('/{page:slug}', [FrontendPageController::class, 'show'])
-        // ->where('page', '^[a-zA-Z0-9_\-\/]+$') // Moins nécessaire avec le route model binding par slug explicite
-        ->name('frontend.page.show');
+    Route::get('/{page:slug}', [FrontendPageController::class, 'show'])->name('frontend.page.show');
 });
 
 
@@ -105,26 +77,36 @@ Route::group(['middleware' => ['web', 'set_locale']], function () {
 // --------------------------------------------------
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Routes de Connexion pour l'Administration (accessibles aux invités)
-    // Le middleware 'guest' est appliqué via le constructeur de AdminLoginController
     Route::get('login', [AdminLoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AdminLoginController::class, 'login'])->name('login.submit');
     Route::post('logout', [AdminLoginController::class, 'logout'])->name('logout');
 
-    // Routes Administrateur Protégées
-    // Nécessite que l'utilisateur soit authentifié ET soit un administrateur (via le middleware 'auth.admin')
     Route::middleware(['auth', 'auth.admin'])->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // CRUD pour les Catégories
+        // CRUDs
         Route::resource('categories', AdminCategoryController::class);
+        Route::resource('posts', AdminPostController::class);
+        Route::resource('projects', AdminProjectController::class);
+        Route::resource('events', AdminEventController::class);
+        Route::resource('pages', AdminPageController::class);
+        Route::resource('team-members', AdminTeamMemberController::class)->parameters(['team-members' => 'teamMember']); // Alias pour route model binding si besoin
+        Route::resource('partners', AdminPartnerController::class);
+        Route::resource('users', AdminUserController::class);
+        
+        // Commentaires (peut nécessiter des routes personnalisées si pas un CRUD complet)
+        // Route::resource('comments', AdminCommentController::class)->only(['index', 'edit', 'update', 'destroy']);
+        // Si vous avez des actions spécifiques comme 'approve'
+        // Route::post('comments/{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
 
-        // Ajoutez ici les routes pour les autres ressources Admin
-        // Exemple :
-        // Route::resource('posts', AdminPostController::class);
-        // Route::resource('projects', AdminProjectController::class);
-        // Route::resource('events', AdminEventController::class);
-        // Route::resource('pages', AdminPageController::class);
-        // Route::resource('settings/site', AdminSettingController::class); // Exemple pour les paramètres
+
+        // Paramètres
+        Route::get('settings/site', [AdminSettingController::class, 'editSiteSettings'])->name('settings.site.edit');
+        Route::put('settings/site', [AdminSettingController::class, 'updateSiteSettings'])->name('settings.site.update'); // Utiliser PUT ou PATCH pour la mise à jour
+        Route::get('settings/homepage', [AdminSettingController::class, 'editHomePageSettings'])->name('settings.homepage.edit');
+        Route::put('settings/homepage', [AdminSettingController::class, 'updateHomePageSettings'])->name('settings.homepage.update'); // Utiliser PUT ou PATCH
+
+        // Médiathèque (si implémentée comme ressource)
+        // Route::resource('media-items', AdminMediaItemController::class);
     });
 });
