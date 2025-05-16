@@ -1,350 +1,251 @@
-{{-- Affichage des erreurs de validation générales (non liées à un champ spécifique) --}}
-@php
-    $fieldsToExclude = [];
-    if (isset($locales)) {
-        $localeKeys = array_keys($locales); // Obtenir les clés 'en', 'fr', 'ar', etc.
-        // Pour les champs 'title' au lieu de 'name' (basé sur votre migration de Post)
-        $fieldsToExclude = array_merge(
-            array_map(fn($locKey) => "title.$locKey", $localeKeys),
-            array_map(fn($locKey) => "body.$locKey", $localeKeys),
-            array_map(fn($locKey) => "excerpt.$locKey", $localeKeys)
-        );
-    } else {
-        // Si $locales n'est pas défini, valeurs par défaut (adaptez si nécessaire)
-        $fieldsToExclude = ['title', 'body', 'excerpt'];
-    }
-    // Ajoutez d'autres champs non traduits spécifiques à Post ici
-    $fieldsToExclude = array_merge($fieldsToExclude, ['category_id', 'status', 'published_at', 'featured_image']);
-@endphp
+{{-- resources/views/admin/posts/_form.blade.php --}}
 
-@if ($errors->any() && !$errors->hasAny($fieldsToExclude))
-    <div class="alert alert-danger rounded-lg shadow-sm border-left border-danger border-4 alert-dismissible fade show" role="alert">
-        <div class="d-flex">
-            <div class="mr-3">
-                <i class="fas fa-exclamation-circle fa-2x text-danger"></i>
-            </div>
-            <div>
-                <h5 class="alert-heading">{{ __('Veuillez corriger les erreurs suivantes') }}</h5>
-                <ul class="mb-0 pl-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> {{-- Pour BS4 --}}
-        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> --}} {{-- Pour BS5 --}}
-    </div>
-@endif
+@props(['post' => null, 'locales', 'categories', 'statuses'])
 
 <div class="row">
-    {{-- ... le reste du fichier _form.blade.php ... --}}
-
-    <div class="col-md-8">
-        {{-- Champs traduisibles --}}
-        <div class="card card-outline card-primary shadow-sm rounded-lg">
-            <div class="card-header bg-gradient-light">
-                <h3 class="card-title font-weight-bold">
-                    <i class="fas fa-pen-fancy mr-2"></i>{{ __('Contenu de l\'Article') }}
-                </h3>
-                <div class="card-tools">
-                    <ul class="nav nav-pills nav-sm ml-auto">
-                        {{-- Ici $locales est un tableau associatif clé => tableau de propriétés --}}
-                        {{-- $localeCode sera 'en', 'fr', 'ar' --}}
-                        {{-- $properties sera ['native' => 'English'], ['native' => 'Français'], etc. --}}
-                        @foreach($locales as $localeCode => $properties)
-                        <li class="nav-item">
-                            <a class="nav-link {{ $loop->first ? 'active' : '' }} rounded-pill px-3"
-                                href="#content-{{ $localeCode }}" {{-- $localeCode est bien une chaîne ici ('en', 'fr', ...) --}}
-                                data-toggle="tab"
-                                style="font-size: 0.9rem;">
-                                <img src="{{ asset('vendor/blade-flags/country-'.($localeCode == 'en' ? 'us' : $localeCode).'.svg') }}"
-                                    width="18"
-                                    alt="{{ $localeCode }}" {{-- $localeCode est bien une chaîne --}}
-                                    class="mr-1" />
-                                {{ $properties['native'] }} {{-- UTILISEZ CECI --}}
-                            </a>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+    {{-- Colonne principale pour le contenu --}}
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ __('Contenu de l\'article') }}</h6>
             </div>
             <div class="card-body">
-                <div class="tab-content">
-                    {{-- $localeCode sera 'en', 'fr', 'ar' --}}
-                    {{-- $properties sera ['native' => 'English'], ['native' => 'Français'], etc. --}}
-                    @foreach($locales as $localeCode => $properties)
-                    <div class="tab-pane p-2 {{ $loop->first ? 'active' : '' }}" id="content-{{ $localeCode }}">
-                        <div class="bg-light p-2 mb-3 rounded border-left border-primary border-4">
-                            <small class="text-muted">{{ __('Vous éditez la version') }} <strong>{{ strtoupper($localeCode) }}</strong>{{ __(' de cet article') }}</small>
-                        </div>
+                {{-- Onglets pour les langues --}}
+                <ul class="nav nav-tabs" id="localeTabs" role="tablist">
+                    @foreach ($locales as $localeCode => $properties)
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ $loop->first ? 'active' : '' }}"
+                                id="tab-{{ $localeCode }}" data-bs-toggle="tab"
+                                data-bs-target="#content-{{ $localeCode }}" type="button" role="tab"
+                                aria-controls="content-{{ $localeCode }}"
+                                aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                {{ $properties['native'] }}
+                                @if ($properties['is_fallback'])
+                                    <span class="badge bg-light text-dark ms-1 border" data-bs-toggle="tooltip" title="{{ __('Langue par défaut (obligatoire)') }}">{{ __('Défaut')}}</span>
+                                @endif
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
 
-                        {{-- Titre --}}
-                        <div class="form-group">
-                            <label for="title-{{ $localeCode }}" class="font-weight-bold">
-                                {{ __('Titre') }}
-                                <span class="badge badge-info">{{ strtoupper($localeCode) }}</span>
-                                @if(isset($properties['is_fallback']) && $properties['is_fallback']) <span class="text-danger">*</span> @endif
-                                {{-- Ou si vous voulez toujours un * pour la première langue dans la boucle : --}}
-                                {{-- @if($loop->first) <span class="text-danger">*</span> @endif --}}
-                            </label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text"><i class="fas fa-heading"></i></span>
-                                </div>
+                <div class="tab-content pt-3 border border-top-0 rounded-bottom p-3" id="localeTabsContent">
+                    @foreach ($locales as $localeCode => $properties)
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
+                            id="content-{{ $localeCode }}" role="tabpanel"
+                            aria-labelledby="tab-{{ $localeCode }}">
+
+                            {{-- Titre --}}
+                            <div class="mb-3">
+                                <label for="title_{{ $localeCode }}" class="form-label">
+                                    {{ __('Titre') }} ({{ strtoupper($localeCode) }})
+                                    @if ($properties['is_fallback'])
+                                        <span class="text-danger">*</span>
+                                    @endif
+                                </label>
                                 <input type="text"
                                     name="title[{{ $localeCode }}]"
-                                    id="title-{{ $localeCode }}"
+                                    id="title_{{ $localeCode }}"
                                     class="form-control @error('title.' . $localeCode) is-invalid @enderror"
-                                    placeholder="{{ __('Entrez le titre de l\'article en') }} {{ $properties['native'] }}"
-                                    value="{{ old('title.' . $localeCode, $post->getTranslation('title', $localeCode, false)) }}">
+                                    value="{{ old('title.' . $localeCode, $post ? $post->getTranslation('title', $localeCode, false) : '') }}"
+                                    {{ $properties['is_fallback'] ? 'required' : '' }}>
                                 @error('title.' . $localeCode)
-                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <small class="form-text text-muted">
-                                <i class="fas fa-info-circle"></i>
-                                {{ __('Un bon titre est court, descriptif et contient des mots-clés importants.') }}
-                            </small>
-                        </div>
 
-                        {{-- Corps de l'article (Avec éditeur Riche) --}}
-                        <div class="form-group">
-                            <label for="body-{{ $localeCode }}" class="font-weight-bold">
-                                {{ __('Corps de l\'article') }}
-                                <span class="badge badge-info">{{ strtoupper($localeCode) }}</span>
-                                @if(isset($properties['is_fallback']) && $properties['is_fallback']) <span class="text-danger">*</span> @endif
-                                {{-- @if($loop->first) <span class="text-danger">*</span> @endif --}}
-                            </label>
-
-                            {{-- ... Votre barre d'outils d'éditeur ... --}}
-                            <div class="editor-toolbar border rounded p-1 mb-1 bg-light">
-                                {{-- ... Vos boutons de barre d'outils ... --}}
+                            {{-- Slug --}}
+                            <div class="mb-3">
+                                <label for="slug_{{ $localeCode }}" class="form-label">
+                                    {{ __('Slug') }} ({{ strtoupper($localeCode) }})
+                                </label>
+                                <input type="text"
+                                    name="slug[{{ $localeCode }}]"
+                                    id="slug_{{ $localeCode }}"
+                                    class="form-control @error('slug.' . $localeCode) is-invalid @enderror"
+                                    value="{{ old('slug.' . $localeCode, $post ? $post->getTranslation('slug', $localeCode, false) : '') }}"
+                                    readonly {{-- Le slug est généré par le backend à partir du titre --}}
+                                    aria-describedby="slugHelp{{ $localeCode }}">
+                                <div id="slugHelp{{ $localeCode }}" class="form-text">{{ __('Le slug est généré automatiquement à partir du titre.') }}</div>
+                                @error('slug.' . $localeCode)
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
-                            <textarea name="body[{{ $localeCode }}]"
-                                id="body-{{ $localeCode }}"
-                                class="form-control @error('body.' . $localeCode) is-invalid @enderror"
-                                rows="15"
-                                placeholder="{{ __('Écrivez le contenu de votre article ici en') }} {{ $properties['native'] }}...">{{ old('body.' . $localeCode, $post->getTranslation('body', $localeCode, false)) }}</textarea>
-                            @error('body.' . $localeCode)
-                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
-                            <small class="form-text text-muted mt-1">
-                                <i class="fas fa-keyboard"></i>
-                                {{ __('Astuce : Utilisez Markdown ou HTML pour formater votre texte. Ctrl+B pour gras, Ctrl+I pour italique.') }}
-                            </small>
-                        </div>
+                            {{-- Corps de l'article --}}
+                            <div class="mb-3">
+                                <label for="body_{{ $localeCode }}" class="form-label">
+                                    {{ __('Corps de l\'article') }} ({{ strtoupper($localeCode) }})
+                                    @if ($properties['is_fallback'])
+                                        <span class="text-danger">*</span>
+                                    @endif
+                                </label>
+                                <textarea name="body[{{ $localeCode }}]"
+                                    id="body_{{ $localeCode }}"
+                                    class="form-control @error('body.' . $localeCode) is-invalid @enderror"
+                                    rows="10"
+                                    {{ $properties['is_fallback'] ? 'required' : '' }}>{{ old('body.' . $localeCode, $post ? $post->getTranslation('body', $localeCode, false) : '') }}</textarea>
+                                {{-- Pour un éditeur riche, vous pouvez initialiser TinyMCE ou autre ici ciblant cette textarea par son ID --}}
+                                @error('body.' . $localeCode)
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        {{-- Extrait --}}
-                        <div class="form-group">
-                            <label for="excerpt-{{ $localeCode }}" class="font-weight-bold">
-                                {{ __('Extrait (Résumé)') }}
-                                <span class="badge badge-info">{{ strtoupper($localeCode) }}</span>
-                            </label>
-                            <textarea name="excerpt[{{ $localeCode }}]"
-                                id="excerpt-{{ $localeCode }}"
-                                class="form-control @error('excerpt.' . $localeCode) is-invalid @enderror"
-                                rows="3"
-                                placeholder="{{ __('Écrivez un court résumé de votre article en') }} {{ $properties['native'] }}...">{{ old('excerpt.' . $localeCode, $post->getTranslation('excerpt', $localeCode, false)) }}</textarea>
-                            @error('excerpt.' . $localeCode)
-                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
-                            <small class="form-text text-muted">
-                                <i class="fas fa-info-circle"></i>
-                                {{ __('L\'extrait est utilisé dans les listes d\'articles et les résultats de recherche.') }}
-                            </small>
-                        </div>
-
-                        @if(!(isset($properties['is_fallback']) && $properties['is_fallback']))
-                        {{-- Ou si vous voulez toujours un * pour la première langue dans la boucle : --}}
-                        {{-- @if(!$loop->first) --}}
-                        <div class="alert alert-info d-flex align-items-center rounded-lg border-left border-info border-4 mt-2 mb-0">
-                            <i class="fas fa-lightbulb mr-3 fa-lg"></i>
-                            <div>
-                                {{ __('Si vous ne renseignez pas cette langue, les visiteurs verront la version par défaut de l\'article.') }} ({{ config('app.fallback_locale') }})
+                            {{-- Extrait --}}
+                            <div class="mb-3">
+                                <label for="excerpt_{{ $localeCode }}" class="form-label">
+                                    {{ __('Extrait') }} ({{ strtoupper($localeCode) }})
+                                </label>
+                                <textarea name="excerpt[{{ $localeCode }}]"
+                                    id="excerpt_{{ $localeCode }}"
+                                    class="form-control @error('excerpt.' . $localeCode) is-invalid @enderror"
+                                    rows="3">{{ old('excerpt.' . $localeCode, $post ? $post->getTranslation('excerpt', $localeCode, false) : '') }}</textarea>
+                                @error('excerpt.' . $localeCode)
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
-                        @endif
-                    </div>
                     @endforeach
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ... Colonne de droite avec les paramètres de publication ... --}}
-    <div class="col-md-4">
-        <div class="sticky-top" style="top: 15px;">
-            {{-- Paramètres de Publication --}}
-            <div class="card card-outline card-secondary shadow-sm rounded-lg mb-4">
-                {{-- ... Contenu de la carte des paramètres ... --}}
-            </div>
-
-            {{-- Image Mise en Avant --}}
-            <div class="card card-outline card-secondary shadow-sm rounded-lg">
-                {{-- ... Contenu de la carte de l'image ... --}}
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<div class="col-md-4">
-    <div class="sticky-top" style="top: 15px;">
-        {{-- Paramètres de Publication --}}
-        <div class="card card-outline card-secondary shadow-sm rounded-lg mb-4">
-            <div class="card-header bg-gradient-light">
-                <h3 class="card-title font-weight-bold">
-                    <i class="fas fa-cog mr-2"></i>{{ __('Paramètres de Publication') }}
-                </h3>
+    {{-- Colonne latérale pour les métadonnées et options --}}
+    <div class="col-lg-4">
+        {{-- Options de publication --}}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ __('Options de publication') }}</h6>
             </div>
             <div class="card-body">
-                {{-- Boutons d'action rapide --}}
-                <div class="d-flex justify-content-between mb-4">
-                    <button type="submit" name="status" value="draft" class="btn btn-outline-secondary">
-                        <i class="far fa-save mr-1"></i> {{ __('Enregistrer comme brouillon') }}
-                    </button>
-                    <button type="submit" name="status" value="published" class="btn btn-success">
-                        <i class="fas fa-check-circle mr-1"></i> {{ __('Publier') }}
-                    </button>
-                </div>
-
                 {{-- Catégorie --}}
-                <div class="form-group">
-                    <label for="category_id" class="font-weight-bold">
-                        {{ __('Catégorie') }} <span class="text-danger">*</span>
-                    </label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-folder"></i></span>
-                        </div>
-                        <select name="category_id" id="category_id" class="form-control @error('category_id') is-invalid @enderror" required>
-                            <option value="">{{ __('Sélectionnez une catégorie') }}</option>
-                            @foreach($categories as $id => $name)
-                            <option value="{{ $id }}" {{ old('category_id', $post->category_id) == $id ? 'selected' : '' }}>
+                <div class="mb-3">
+                    <label for="category_id" class="form-label">{{ __('Catégorie') }} <span class="text-danger">*</span></label>
+                    <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
+                        <option value="">{{ __('Sélectionner une catégorie') }}</option>
+                        @foreach ($categories as $id => $name)
+                            <option value="{{ $id }}" {{ old('category_id', $post->category_id ?? null) == $id ? 'selected' : '' }}>
                                 {{ $name }}
                             </option>
-                            @endforeach
-                        </select>
-                        @error('category_id')
-                        <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                        @enderror
-                    </div>
-                </div>
-
-                {{-- Statut --}}
-                <div class="form-group">
-                    <label for="status" class="font-weight-bold">
-                        {{ __('Statut') }} <span class="text-danger">*</span>
-                    </label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
-                        </div>
-                        <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required>
-                            @foreach($statuses as $value => $label)
-                            <option value="{{ $value }}" {{ old('status', $post->status ?? 'draft') == $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('status')
-                        <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                        @enderror
-                    </div>
-                </div>
-
-                {{-- Date de publication --}}
-                <div class="form-group" id="published_at_wrapper">
-                    <label for="published_at" class="font-weight-bold">
-                        {{ __('Date de publication') }}
-                    </label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
-                        </div>
-                        <input type="datetime-local"
-                            name="published_at"
-                            id="published_at"
-                            class="form-control @error('published_at') is-invalid @enderror"
-                            value="{{ old('published_at', $post->published_at ? $post->published_at->format('Y-m-d\TH:i') : '') }}">
-                        @error('published_at')
-                        <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                        @enderror
-                    </div>
-                    <small class="form-text text-muted">
-                        <i class="fas fa-info-circle"></i>
-                        {{ __('Laisser vide pour publier immédiatement (si le statut est "Publié").') }}
-                    </small>
-                </div>
-            </div>
-            <div class="card-footer bg-light">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-user-edit text-muted mr-2"></i>
-                    <span class="text-muted">{{ __('Auteur') }}: {{ auth()->user()->name }}</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Image Mise en Avant --}}
-        <div class="card card-outline card-secondary shadow-sm rounded-lg">
-            <div class="card-header bg-gradient-light">
-                <h3 class="card-title font-weight-bold">
-                    <i class="fas fa-image mr-2"></i>{{ __('Image Mise en Avant') }}
-                </h3>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-3" id="image-preview-container">
-                    <div class="position-relative d-inline-block">
-                        <img id="featured_image_preview"
-                            src="{{ $post->featured_image ? Storage::url($post->featured_image) : asset('img/placeholder-image.jpg') }}"
-                            alt="{{ __('Aperçu de l\'image') }}"
-                            class="img-fluid rounded shadow-sm"
-                            style="max-height: 200px; {{ $post->featured_image ? '' : 'opacity: 0.5;' }}">
-                        @if(!$post->featured_image)
-                        <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                            <span class="text-muted">{{ __('Aucune image') }}</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="custom-file mb-3">
-                    <input type="file"
-                        name="featured_image"
-                        id="featured_image"
-                        class="custom-file-input @error('featured_image') is-invalid @enderror"
-                        onchange="previewImage(event)">
-                    <label class="custom-file-label" for="featured_image">{{ __('Choisir une image...') }}</label>
-                    @error('featured_image')
-                    <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                        @endforeach
+                    </select>
+                    @error('category_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                @if($post->featured_image)
-                <input type="hidden" id="current_featured_image_path_for_display" value="{{ Storage::url($post->featured_image) }}">
-                <div class="form-check mt-2" id="remove_featured_image_label">
-                    <input class="form-check-input" type="checkbox" name="remove_featured_image" id="remove_featured_image_checkbox" value="1" onclick="if(this.checked) { removeImage(); }">
-                    <label class="form-check-label" for="remove_featured_image_checkbox">
-                        {{ __('Supprimer l\'image mise en avant actuelle') }}
-                    </label>
+                {{-- Statut --}}
+                <div class="mb-3">
+                    <label for="status" class="form-label">{{ __('Statut') }} <span class="text-danger">*</span></label>
+                    <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
+                        @foreach ($statuses as $key => $value)
+                            <option value="{{ $key }}" {{ old('status', $post->status ?? 'draft') == $key ? 'selected' : '' }}>
+                                {{ $value }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('status')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-                @else
-                <div class="form-check mt-2" id="remove_featured_image_label" style="display:none;">
-                    <input class="form-check-input" type="checkbox" name="remove_featured_image" id="remove_featured_image_checkbox" value="1" onclick="if(this.checked) { removeImage(); }">
-                    <label class="form-check-label" for="remove_featured_image_checkbox">
-                        {{ __('Supprimer l\'image sélectionnée') }}
-                    </label>
-                </div>
-                @endif
 
-                <small class="form-text text-muted mt-2">
-                    <i class="fas fa-info-circle"></i>
-                    {{ __('Formats recommandés: JPG, PNG. Taille idéale: 1200×630 pixels.') }}
-                </small>
+                {{-- Date de publication --}}
+                <div class="mb-3">
+                    <label for="published_at" class="form-label">{{ __('Date de publication') }}</label>
+                    <input type="datetime-local" name="published_at" id="published_at"
+                        class="form-control @error('published_at') is-invalid @enderror"
+                        value="{{ old('published_at', $post && $post->published_at ? $post->published_at->format('Y-m-d\TH:i') : '') }}">
+                    <div class="form-text">{{ __('Laisser vide pour publier immédiatement si le statut est "Publié" (lors de la création).') }}</div>
+                    @error('published_at')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        {{-- Image mise en avant --}}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ __('Image mise en avant') }}</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="featured_image" class="form-label">{{ __('Télécharger une nouvelle image') }}</label>
+                    <input type="file" name="featured_image" id="featured_image"
+                        class="form-control @error('featured_image') is-invalid @enderror" accept="image/*">
+                    <div class="form-text">{{ __('Max. 5MB. Formats suggérés: JPG, PNG, WEBP.') }}</div>
+                    @error('featured_image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <img id="imagePreview" src="#" alt="{{ __('Aperçu de la nouvelle image') }}" class="img-fluid rounded mb-2 border" style="max-height: 200px; display: none;"/>
+
+                @if (isset($post) && $post->featured_image)
+                    <div class="mb-3">
+                        <label class="form-label d-block">{{ __('Image actuelle :') }}</label>
+                        <img src="{{ Storage::url($post->featured_image) }}" alt="{{ __('Image actuelle') }}"
+                            class="img-fluid rounded mb-2 border" style="max-height: 150px;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remove_featured_image" id="remove_featured_image" value="1">
+                            <label class="form-check-label" for="remove_featured_image">
+                                {{ __('Supprimer l\'image mise en avant actuelle') }}
+                            </label>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
+
+<div class="row mt-0"> {{-- mt-0 pour rapprocher de la carte de droite si elle est plus longue --}}
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-body text-end"> {{-- text-end pour aligner les boutons à droite --}}
+                 <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary me-2">
+                    <i class="fas fa-times me-1"></i>
+                    {{ __('Annuler') }}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>
+                    {{ isset($post) ? __('Mettre à jour l\'article') : __('Enregistrer l\'article') }}
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Activation des tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Script simple pour la prévisualisation de l'image
+    const imageInput = document.getElementById('featured_image');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (imageInput && imagePreview) {
+        imageInput.addEventListener('change', function(event) {
+            if (event.target.files && event.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(event.target.files[0]);
+            } else {
+                // Si l'utilisateur déselectionne le fichier (par exemple, en cliquant sur Annuler dans la boîte de dialogue)
+                // Ou si le navigateur ne supporte pas event.target.files[0] après une déselection
+                imagePreview.src = '#'; // Réinitialiser src
+                imagePreview.style.display = 'none'; // Cacher l'aperçu
+            }
+        });
+    }
+});
+</script>
+@endpush
