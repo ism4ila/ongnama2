@@ -47,7 +47,7 @@ class EventController extends Controller
                             // ->where('status', 'published')
                             ->take(4)
                             ->get();
-
+ 
         return view('frontend.events.show', compact('event', 'otherEvents'));
     }
 }

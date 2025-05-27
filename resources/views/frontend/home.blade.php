@@ -4,36 +4,37 @@
 {{ $homePageSettings->getTranslation('hero_title', app()->getLocale()) ?? __('Accueil') }} - {{ $siteSettingsGlobal->getTranslation('site_name', app()->getLocale()) ?? config('app.name', 'Nama') }}
 @endsection
 
+@section('meta_description')
+{{ $homePageSettings->getTranslation('hero_subtitle', app()->getLocale()) ?? $siteSettingsGlobal->getTranslation('footer_description', app()->getLocale()) }}
+@endsection
+
 @section('content')
 <div class="container homepage-content">
     {{-- HERO SECTION --}}
     <div class="row mb-5">
         <div class="col-12 text-center hero-section animate__animated animate__fadeIn"
-            style="{{ $homePageSettings->hero_background_image ? 'background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.75)), url(' . Storage::url($homePageSettings->hero_background_image) . ');' : '' }}">
+            style="{{ $homePageSettings->hero_background_image ? 'background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.75)), url(' . asset($homePageSettings->hero_background_image) . ');' : '' }}">
             <h1 class="hero-title">
                 {{ $homePageSettings->getTranslation('hero_title', app()->getLocale()) ?? __('Bienvenue à l\'Organisation Nama') }}
             </h1>
             <p class="hero-subtitle">
-                {{ $homePageSettings->getTranslation('hero_subtitle', app()->getLocale()) ?? __('Agir ensemble pour un avenir meilleur.') }}
+                {{ $homePageSettings->getTranslation('hero_subtitle', app()->getLocale()) ?? __('Agir ensemble pour un avenir meilleur, construire des ponts vers l\'espoir et créer un impact durable dans nos communautés.') }}
             </p>
             @php
             $heroButtonLinkValue = $homePageSettings->hero_button_link;
-            $finalHeroButtonLink = '#'; // Default fallback
+            $finalHeroButtonLink = '#';
             if ($heroButtonLinkValue) {
-            if (!filter_var($heroButtonLinkValue, FILTER_VALIDATE_URL) && Route::has($heroButtonLinkValue)) {
-            try {
-            $finalHeroButtonLink = route($heroButtonLinkValue, ['locale' => app()->getLocale()]);
-            } catch (\Exception $e) {
-            // If route generation fails (e.g., missing parameters for the named route), fallback to URL
-            $finalHeroButtonLink = url($heroButtonLinkValue);
-            }
+                if (!filter_var($heroButtonLinkValue, FILTER_VALIDATE_URL) && Route::has($heroButtonLinkValue)) {
+                    try {
+                        $finalHeroButtonLink = route($heroButtonLinkValue, ['locale' => app()->getLocale()]);
+                    } catch (\Exception $e) {
+                        $finalHeroButtonLink = url($heroButtonLinkValue);
+                    }
+                } else {
+                    $finalHeroButtonLink = url($heroButtonLinkValue);
+                }
             } else {
-            // If it's a full URL or not a valid route name, treat as direct URL
-            $finalHeroButtonLink = url($heroButtonLinkValue);
-            }
-            } else {
-            // Fallback if no button link is set in settings
-            $finalHeroButtonLink = route('frontend.projects.index', ['locale' => app()->getLocale()]);
+                $finalHeroButtonLink = route('frontend.projects.index', ['locale' => app()->getLocale()]);
             }
             @endphp
             <a href="{{ $finalHeroButtonLink }}" class="btn btn-primary btn-lg hero-button">
@@ -55,9 +56,9 @@
             @foreach ($latestProjects as $project)
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
                 <div class="card project-card h-100">
-                    <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->slug)]) }}" class="card-image-link">
+                    <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->id)]) }}" class="card-image-link">
                         <div class="card-image-container">
-                            <img src="{{ $project->image ? Storage::url($project->image) : asset('images/placeholder_project_card.jpg') }}"
+                            <img src="{{ $project->featured_image_url ? asset($project->featured_image_url) : asset('images/placeholder_project_card.jpg') }}"
                                 class="card-img-top" alt="{{ $project->getTranslation('title', app()->getLocale()) }}">
                             @if($project->status)
                             <span class="card-status-badge badge bg-primary">{{ __(ucfirst($project->status)) }}</span>
@@ -66,7 +67,7 @@
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">
-                            <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->slug)]) }}">
+                            <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->id)]) }}">
                                 {{ Str::limit($project->getTranslation('title', app()->getLocale()), 55) }}
                             </a>
                         </h5>
@@ -77,7 +78,7 @@
                             @if($project->end_date)
                             - {{ \Carbon\Carbon::parse($project->end_date)->translatedFormat('M Y') }}
                             @else
-                            - {{__('Ongoing')}}
+                            - {{__('En cours')}}
                             @endif
                             <br>
                             @endif
@@ -86,7 +87,7 @@
                             @endif
                         </p>
                         <p class="card-excerpt flex-grow-1">{{ Str::limit(strip_tags($project->getTranslation('description', app()->getLocale())), 100) }}</p>
-                        <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->slug)]) }}" class="btn btn-outline-primary mt-auto align-self-start">
+                        <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->id)]) }}" class="btn btn-outline-primary mt-auto align-self-start">
                             {{ __('En savoir plus') }} <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -119,7 +120,7 @@
                     <a href="{{ route('frontend.posts.show', ['locale' => app()->getLocale(), 'post' => $post->getTranslation('slug', app()->getLocale(), $post->slug)]) }}" class="card-image-link">
                         <div class="card-image-container">
                             @if($post->featured_image)
-                            <img src="{{ Storage::url($post->featured_image) }}" class="card-img-top" alt="{{ $post->getTranslation('title', app()->getLocale()) }}">
+                            <img src="{{ asset($post->featured_image) }}" class="card-img-top" alt="{{ $post->getTranslation('title', app()->getLocale()) }}">
                             @else
                             <img src="{{ asset('images/placeholder_post_card.jpg') }}" class="card-img-top" alt="{{ $post->getTranslation('title', app()->getLocale()) }}">
                             @endif
@@ -173,13 +174,10 @@
             @foreach ($upcomingEvents as $event)
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
                 <div class="card event-card h-100">
-                    {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
-                    <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="card-image-link">
+                    <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="card-image-link">
                         <div class="card-image-container">
-                            @if($event->image)
-                            <img src="{{ Storage::url($event->image) }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
-                            @elseif($event->image_url) {{-- Si vous avez un accesseur image_url sur votre modèle Event --}}
-                            <img src="{{ $event->image_url }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
+                            @if($event->featured_image_url)
+                            <img src="{{ asset($event->featured_image_url) }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
                             @else
                             <img src="{{ asset('images/placeholder_event_card.jpg') }}" class="card-img-top" alt="{{ $event->getTranslation('title', app()->getLocale()) }}">
                             @endif
@@ -192,8 +190,7 @@
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">
-                            {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
-                            <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}">
+                            <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}">
                                 {{ Str::limit($event->getTranslation('title', app()->getLocale()), 55) }}
                             </a>
                         </h5>
@@ -204,8 +201,7 @@
                             @endif
                         </p>
                         <p class="card-excerpt flex-grow-1">{{ Str::limit(strip_tags($event->getTranslation('description', app()->getLocale())), 100) }}</p>
-                        {{-- CORRIGÉ ICI : 'event' au lieu de 'event_slug' --}}
-                        <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'event' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="btn btn-outline-info mt-auto align-self-start">
+                        <a href="{{ route('frontend.events.show', ['locale' => app()->getLocale(), 'slug' => $event->getTranslation('slug', app()->getLocale()) ?? $event->id ]) }}" class="btn btn-outline-info mt-auto align-self-start">
                             {{ __('Voir les détails') }} <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -223,6 +219,38 @@
     </section>
     @endif
 
+    {{-- PARTNERS SECTION --}}
+    @if(isset($partners) && $partners->isNotEmpty())
+    <section class="partners-section py-4 mb-5" data-aos="fade-up">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="section-title styled-title"><span>{{ $homePageSettings->getTranslation('partners_title', app()->getLocale()) ?? __('Nos Précieux Partenaires') }}</span></h2>
+            </div>
+        </div>
+        <div class="row align-items-center justify-content-center">
+            @foreach($partners as $partner)
+            <div class="col-lg-2 col-md-3 col-4 text-center mb-4 partner-logo-item">
+                @if($partner->website_url)
+                <a href="{{ $partner->website_url }}" target="_blank" rel="noopener" class="d-block">
+                @endif
+                    @if($partner->logo_path)
+                        <img src="{{ asset($partner->logo_path) }}" 
+                             alt="{{ $partner->getTranslation('name', app()->getLocale()) }}" 
+                             class="img-fluid partner-logo">
+                    @else
+                        <div class="text-center p-3 bg-light rounded">
+                            <span class="text-muted">{{ $partner->getTranslation('name', app()->getLocale()) }}</span>
+                        </div>
+                    @endif
+                @if($partner->website_url)
+                </a>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
 </div> {{-- Fin du container homepage-content --}}
 
 {{-- NEWSLETTER SECTION --}}
@@ -235,7 +263,6 @@
                 </div>
                 <h2 class="newsletter-title">{{ $homePageSettings->getTranslation('newsletter_title', app()->getLocale()) ?? __('Restez informé de nos activités') }}</h2>
                 <p class="newsletter-text mb-4">{{ $homePageSettings->getTranslation('newsletter_text', app()->getLocale()) ?? __('Inscrivez-vous à notre newsletter pour recevoir les dernières nouvelles et mises à jour.') }}</p>
-                {{-- Note: L'action du formulaire est "#". Vous devrez implémenter une route et un contrôleur pour la soumission de la newsletter. --}}
                 <form class="row g-2 justify-content-center newsletter-form-inline" action="#" method="POST">
                     @csrf
                     <div class="col-sm-8 col-md-7 col-lg-6">
@@ -257,13 +284,46 @@
 @push('scripts_frontend')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Le script pour les logos des partenaires est commenté,
-        // en supposant que le CSS gère mieux les effets de survol.
-        // const partnerLogos = document.querySelectorAll('.partner-logo-item img');
-        // partnerLogos.forEach(logo => {
-        //     logo.addEventListener('mouseover', () => { /* ... */ });
-        //     logo.addEventListener('mouseout', () => { /* ... */ });
-        // });
+        // Animations d'entrée pour les éléments
+        const fadeInElements = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        fadeInElements.forEach(el => {
+            observer.observe(el);
+        });
+
+        // Animation des compteurs (stats) si présents
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(stat => {
+            const finalNumber = parseInt(stat.textContent);
+            let currentNumber = 0;
+            const increment = finalNumber / 100;
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= finalNumber) {
+                    currentNumber = finalNumber;
+                    clearInterval(timer);
+                }
+                stat.textContent = Math.floor(currentNumber) + '+';
+            }, 20);
+        });
+
+        // Effet de parallaxe léger pour le hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroSection = document.querySelector('.hero-section');
+            if (heroSection && scrolled < heroSection.offsetHeight) {
+                heroSection.style.transform = `translateY(${scrolled * 0.1}px)`;
+            }
+        });
     });
 </script>
 @endpush

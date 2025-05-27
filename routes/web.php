@@ -59,7 +59,8 @@ Route::group(['middleware' => ['web', 'set_locale']], function () {
     Route::get('/projects', [FrontendProjectController::class, 'index'])->name('frontend.projects.index');
     Route::get('/projects/{project:slug}', [FrontendProjectController::class, 'show'])->name('frontend.projects.show'); // Assurez-vous que le modèle Project a un champ slug traduisible et est géré
     Route::get('/events', [FrontendEventController::class, 'index'])->name('frontend.events.index');
-    Route::get('/events/{event:slug}', [FrontendEventController::class, 'show'])->name('frontend.events.show'); // Idem pour Event et slug
+    // Route::get('/events/{event:slug}', [FrontendEventController::class, 'show'])->name('frontend.events.show'); // Idem pour Event et slug
+    Route::get('/events/{slug}', [FrontendEventController::class, 'show'])->name('frontend.events.show');
     Route::get('/contact', [FrontendContactController::class, 'index'])->name('frontend.contact.index');
     Route::post('/contact', [FrontendContactController::class, 'store'])->name('frontend.contact.store');
 
