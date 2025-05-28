@@ -60,5 +60,17 @@
     "Confirm Delete Post": "Êtes-vous sûr de vouloir supprimer cet article ?",
     "Post created successfully.": "Article créé avec succès.",
     "Post updated successfully.": "Article mis à jour avec succès.",
-    "Post deleted successfully.": "Article supprimé avec succès."
+    "Post deleted successfully.": "Article supprimé avec succès.",
+
+   
+    "À Propos": "À Propos",
+    "Nos Projets": "Nos Projets",
+    "Contact": "Contact",
+    "En cours": "En cours",
+    "Terminé": "Terminé",
+    "Planifié": "Planifié",
+    "En savoir plus": "En savoir plus",
+    "Nous contacter": "Nous contacter",
+    "Soutenez nos projets": "Soutenez nos projets"
+
 }

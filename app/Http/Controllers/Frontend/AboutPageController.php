@@ -12,4 +12,4 @@ class AboutPageController extends Controller
         // Pour l'instant, juste une vue simple. On pourrait ajouter des données spécifiques si besoin.
         return view('frontend.about'); // Vue: resources/views/frontend/about.blade.php
     }
-}
+}   

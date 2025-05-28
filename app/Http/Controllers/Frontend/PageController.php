@@ -20,7 +20,7 @@ class PageController extends Controller
 
 
         if (!$page->is_published) {
-            abort(404);
+            abort(404); // N'affiche pas la page si elle n'est pas publiée
         }
         // La variable $page est déjà injectée si le route model binding fonctionne
         return view('frontend.page.show', compact('page'));
