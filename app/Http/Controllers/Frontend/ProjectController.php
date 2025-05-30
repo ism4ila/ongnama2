@@ -29,12 +29,12 @@ class ProjectController extends Controller
 
     public function show($locale, $project)
     {
-        // Trouver le projet par ID (ou slug si implémenté)
+        // Trouver le projet par ID
         $project = Project::findOrFail($project);
         
-        // Récupérer d'autres projets pour la sidebar (3 projets aléatoires excluant le projet actuel)
+        // Récupérer d'autres projets pour la sidebar (3 projets récents excluant le projet actuel)
         $otherProjects = Project::where('id', '!=', $project->id)
-                               ->inRandomOrder()
+                               ->orderBy('start_date', 'desc')
                                ->take(3)
                                ->get();
         

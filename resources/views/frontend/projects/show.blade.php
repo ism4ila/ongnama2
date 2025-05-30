@@ -11,7 +11,7 @@
             <article class="project-single">
                 {{-- Featured Image --}}
                 @if($project->featured_image_url)
-                    <img src="{{ $project->featured_image_url }}" 
+                    <img src="{{ asset('images/' . $project->featured_image_url) }}" 
                          alt="{{ $project->getTranslation('title', app()->getLocale()) }}" 
                          class="img-fluid rounded mb-4 shadow-sm w-100" 
                          style="max-height: 400px; object-fit: cover;">
@@ -46,9 +46,30 @@
                                     <i class="fas fa-info-circle text-primary me-2"></i>
                                     <strong>{{ __('Statut') }} :</strong><br>
                                     <span class="ms-4">
-                                        <span class="badge bg-primary">
-                                            {{ __($project->status === 'ongoing' ? 'En cours' : ($project->status === 'completed' ? 'Terminé' : ($project->status === 'planned' ? 'Planifié' : ucfirst($project->status)))) }}
-                                        </span>
+                                        @php
+                                            $statusClass = 'bg-primary';
+                                            $statusText = ucfirst($project->status);
+                                            
+                                            switch($project->status) {
+                                                case 'ongoing':
+                                                    $statusClass = 'bg-success';
+                                                    $statusText = __('En cours');
+                                                    break;
+                                                case 'completed':
+                                                    $statusClass = 'bg-info';
+                                                    $statusText = __('Terminé');
+                                                    break;
+                                                case 'planned':
+                                                    $statusClass = 'bg-warning';
+                                                    $statusText = __('Planifié');
+                                                    break;
+                                                case 'cancelled':
+                                                    $statusClass = 'bg-secondary';
+                                                    $statusText = __('Annulé');
+                                                    break;
+                                            }
+                                        @endphp
+                                        <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
                                     </span>
                                 </p>
                             @endif
@@ -58,7 +79,10 @@
                                 <p class="mb-2">
                                     <i class="fas fa-map-marker-alt text-primary me-2"></i>
                                     <strong>{{ __('Localisation') }} :</strong><br>
-                                    <span class="ms-4">{{ $project->location_latitude }}, {{ $project->location_longitude }}</span>
+                                    <span class="ms-4">
+                                        {{ __('Lat') }}: {{ number_format($project->location_latitude, 4) }}<br>
+                                        {{ __('Lng') }}: {{ number_format($project->location_longitude, 4) }}
+                                    </span>
                                 </p>
                             @endif
                         </div>
@@ -86,6 +110,10 @@
                            target="_blank" class="btn btn-outline-primary btn-sm">
                             <i class="fab fa-linkedin-in me-1"></i> LinkedIn
                         </a>
+                        <a href="whatsapp://send?text={{ urlencode($project->getTranslation('title', app()->getLocale()) . ' - ' . url()->current()) }}" 
+                           class="btn btn-outline-success btn-sm">
+                            <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                        </a>
                     </div>
                 </div>
             </article>
@@ -103,7 +131,7 @@
                            class="list-group-item list-group-item-action border-0 px-0">
                             <div class="d-flex align-items-start">
                                 @if($otherProject->featured_image_url)
-                                    <img src="{{ $otherProject->featured_image_url }}" 
+                                    <img src="{{ asset('images/' . $otherProject->featured_image_url) }}" 
                                          alt="{{ $otherProject->getTranslation('title', app()->getLocale()) }}" 
                                          class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                 @else
@@ -125,6 +153,12 @@
                         </a>
                     @endforeach
                 </div>
+                <div class="text-center mt-3">
+                    <a href="{{ route('frontend.projects.index', ['locale' => app()->getLocale()]) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        {{ __('Voir tous les projets') }}
+                    </a>
+                </div>
             </div>
             @endif
 
@@ -144,3 +178,59 @@
     </div>
 </div>
 @endsection
+
+@push('styles_frontend')
+<style>
+    .project-single .project-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .project-single .project-content h2,
+    .project-single .project-content h3,
+    .project-single .project-content h4 {
+        color: var(--secondary-color);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .project-single .project-content p {
+        margin-bottom: 1rem;
+        line-height: 1.7;
+    }
+    
+    .sidebar-widget {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background-color: var(--light-gray, #F8F9FA);
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-widget .widget-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--accent-color, #E9ECEF);
+    }
+    
+    .sidebar-widget .list-group-item:hover {
+        background-color: rgba(var(--primary-color-rgb, 0,123,255), 0.05);
+    }
+    
+    .sidebar-widget .list-group-item:hover h6 {
+        color: var(--primary-color);
+    }
+    
+    [dir="rtl"] .sidebar-widget img,
+    [dir="rtl"] .sidebar-widget .bg-light {
+        margin-right: 0;
+        margin-left: 1rem;
+    }
+</style>
+@endpush

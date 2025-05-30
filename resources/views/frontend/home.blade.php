@@ -56,7 +56,7 @@
             @foreach ($latestProjects as $project)
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
                 <div class="card project-card h-100">
-                    <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->getTranslation('slug', app()->getLocale(), $project->id)]) }}" class="card-image-link">
+                    <a href="{{ route('frontend.projects.show', ['locale' => app()->getLocale(), 'project' => $project->id]) }}">
                         <div class="card-image-container">
                             <img src="{{ $project->featured_image_url ? asset($project->featured_image_url) : asset('images/placeholder_project_card.jpg') }}"
                                 class="card-img-top" alt="{{ $project->getTranslation('title', app()->getLocale()) }}">

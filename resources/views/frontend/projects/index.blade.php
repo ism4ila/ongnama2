@@ -49,7 +49,7 @@
                     <div class="card project-card h-100 shadow-sm">
                         <div class="card-image-container">
                             @if($project->featured_image_url)
-                                <img src="{{ $project->featured_image_url }}" 
+                                <img src="{{ asset('images/' . $project->featured_image_url) }}" 
                                      class="card-img-top" 
                                      alt="{{ $project->getTranslation('title', app()->getLocale()) }}"
                                      style="height: 250px; object-fit: cover;">
@@ -62,7 +62,22 @@
                             {{-- Status Badge --}}
                             @if($project->status)
                                 <span class="card-status-badge badge">
-                                    {{ __($project->status === 'ongoing' ? 'En cours' : ($project->status === 'completed' ? 'Terminé' : ($project->status === 'planned' ? 'Planifié' : ucfirst($project->status)))) }}
+                                    @switch($project->status)
+                                        @case('ongoing')
+                                            {{ __('En cours') }}
+                                            @break
+                                        @case('completed')
+                                            {{ __('Terminé') }}
+                                            @break
+                                        @case('planned')
+                                            {{ __('Planifié') }}
+                                            @break
+                                        @case('cancelled')
+                                            {{ __('Annulé') }}
+                                            @break
+                                        @default
+                                            {{ __(ucfirst($project->status)) }}
+                                    @endswitch
                                 </span>
                             @endif
                         </div>
@@ -85,6 +100,13 @@
                                         @elseif($project->status === 'ongoing')
                                             - {{ __('En cours') }}
                                         @endif
+                                    </small>
+                                @endif
+                                
+                                @if($project->location_latitude && $project->location_longitude)
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ number_format($project->location_latitude, 4) }}, {{ number_format($project->location_longitude, 4) }}
                                     </small>
                                 @endif
                             </div>
@@ -128,3 +150,47 @@
     @endif
 </div>
 @endsection
+
+@push('styles_frontend')
+<style>
+    .project-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+    
+    .card-status-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 2;
+    }
+    
+    .card-image-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-image-container img {
+        transition: transform 0.3s ease;
+    }
+    
+    .project-card:hover .card-image-container img {
+        transform: scale(1.05);
+    }
+    
+    [dir="rtl"] .card-status-badge {
+        right: 10px;
+        left: auto;
+    }
+</style>
+@endpush
